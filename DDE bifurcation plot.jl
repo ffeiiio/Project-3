@@ -41,13 +41,11 @@ opts = ContinuationPar(
     max_bisection_steps = 25
 )
 
-
 # Continuation bifurcation analyse
 br = continuation(prob, PALC(), opts; verbosity = 1, plot = true, bothside = false)
 
 # Plot bifurcation diagram
 plot(br,size=(800, 700))
-
 
 hpnf = BK.get_normal_form(br, 1)
 
@@ -70,10 +68,7 @@ brhopf2 = continuation(br, 2, (@optic _.τ2),
 
 plot(brhopf, vars = (:τ1, :τ2), legend = true)
 
-
 plot(brhopf, vars = (:P, :τ1), xlims = (-2.0,-1.25), ylims = (-0,2))
-
-
 
 plot!(brhopf2, vars = (:P, :τ1), xlims = (-3,0.0), ylims = (2.5,15))
 
