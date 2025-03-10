@@ -1,1 +1,107 @@
+using DifferentialEquations
+using Plots
+using LaTeXStrings
+# define firing_rate function
+function firing_rate(x, beta)
+    return 1.0 / (1.0 + exp(-beta * x))
+end
+
+# define Wilson-Cowan model 
+function WCvf_equilibrium(du, u, h, p, t)
+    (; c1, c2, c3, c4, P, Q, beta, τ) = p
+    u_delay, v_delay = h(p, t - τ)  
+    du[1] = -u[1] + firing_rate(c1 * u_delay[1] + c2 * v_delay[1] + P, beta)
+    du[2] = -u[2] + firing_rate(c3 * v_delay[1] + c4 * u_delay[1] + Q, beta)
+end
+
+# history function
+function history(p, t)
+    return [0.5, 3.0]  
+end
+
+# Parameters
+p = (c1=10.0, c2=-10.0, c3=10.0, c4=2.0, P=-2.0, Q=-4.0, beta=1.0, τ=0.1) 
+τ_values = range(0.0, 0.5, length=500)  
+bifurcation_data = []  # Store the bifurcation data
+
+# Iterate over the value of the parameter τ
+for τ in τ_values
+    p = (; p..., τ)  
+    prob = DDEProblem(WCvf_equilibrium, [0.5, 0.5], history, (0.0, 1000.0), p)
+    sol = solve(prob, MethodOfSteps(Tsit5()))
+
+    # the last time state value
+    t = sol.t
+    u = sol[1, :]  
+    u_final = u[end-100:end]  
+    append!(bifurcation_data, [(τ, u) for u in u_final])
+end
+
+
+τ_points = [point[1] for point in bifurcation_data]
+u_points = [point[2] for point in bifurcation_data]
+
+# Plot bifurcation graph
+scatter(τ_points, u_points, markersize=1, color=:black, legend=false,
+        xlabel=L"\tau", ylabel=L"u(t)", title="Bifurcation Diagram of Wilson-Cowan Model")
+
+
+using DifferentialEquations
+using Plots
+using LaTeXStrings 
+
+# define firing_rate function
+function firing_rate(x, beta)
+    return 1.0 / (1.0 + exp(-beta * x))
+end
+
+function WCvf_equilibrium(du, u, h, p, t)
+   
+    (; c1, c2, c3, c4, P, Q, beta, τ1, τ2) = p
+
+   
+    u_delay1, v_delay1 = h(p, t - τ1)  #  t - τ1
+    u_delay2, v_delay2 = h(p, t - τ2)  #  t - τ2
+
+    # calculate du[1] (excitatory) 和 du[2] (inhibitory)
+    du[1] = -u[1] + firing_rate(c1*u_delay1[1] + c2*v_delay2[1] + P, beta)
+    du[2] = -u[2] + firing_rate(c3*u_delay2[1] + c4*u_delay1[1] + Q, beta)
+end
+
+# history function
+function history(p, t)
+    return [0.5, 3.0]  
+end
+
+# Parameters
+p = (c1=10.0, c2=-10.0, c3=10.0, c4=2.0, P=-2.0, Q=-4.0, beta=1.0, τ1=0.5, τ2=0.3) 
+τ1_values = range(0.0, 0.5, length=500)  
+bifurcation_data = []  
+
+# Iterate over the value of the parameter τ1
+for τ1 in τ1_values
+    p = (; p..., τ1)  
+    prob = DDEProblem(WCvf_equilibrium, [0.5, 0.5], history, (0.0, 1000.0), p)
+    sol = solve(prob, MethodOfSteps(Tsit5()))
+
+    # # the last time state value
+    t = sol.t
+    u = sol[1, :]  
+    u_final = u[end-300:end]  
+    append!(bifurcation_data, [(τ1, u) for u in u_final])
+end
+
+τ1_points = [point[1] for point in bifurcation_data]
+u_points = [point[2] for point in bifurcation_data]
+
+# Plot the bifurcation graph
+scatter(τ1_points, u_points, markersize=1, color=:black, legend=false,
+        xlabel=L"\tau_1", ylabel=L"u(t)", title="Bifurcation Diagram of Wilson-Cowan Model (τ1)")
+
+
+
+
+
+
+
 
