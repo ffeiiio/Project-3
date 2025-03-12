@@ -1,7 +1,7 @@
 using Revise, Plots
 using BifurcationKit
 const BK = BifurcationKit
-
+# define function
 function firing_rate(x, beta)
     return 1.0 / (1.0 + exp(-beta * x))
 end
